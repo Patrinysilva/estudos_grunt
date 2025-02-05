@@ -1,10 +1,12 @@
+const { task, option } = require("grunt");
+
 module.exports = function(grunt){
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         less:{
             development:{
                 files: {
-                    'main.css': 'main.less'
+                    'dev/styles/main.css': 'src/styles/main.less'
                 }
             },
             production:{
@@ -12,43 +14,44 @@ module.exports = function(grunt){
                     compress: true,
                 },
                 files:{
-                    'main.min.css': 'main.less'
+                    'dist/styles/main.min.css': 'src/styles/main.less'
                 }
             }
         },
-        sass:{
-            dist: {
-                options:{
-                    style: 'compressed'
+        watch:{
+            less:{
+                files:['src/styles/**/*.less'],
+                tasks:['less:development']
+            }
+        },
+        replace{
+            dev: {
+                option: {
+                    patterns: [
+                        {
+                            match: 'ENDERECO_DO_CSS',
+                            replacement: './styles/main.css'
+                        }
+                    ]
                 },
-                files:{
-                    'main2.css': 'main.scss'
-                }
+                files:[
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['src/index.html'],
+                        dest: 'dev/'
+                    }
+                ]
             }
-        },
-        concurrent: {
-            target: ['olagrunt', 'less', 'sass', 'tarefaDemorada']
         }
     })
 
-    grunt.registerTask('olagrunt', function(){
-        const done = this.async();
-        setTimeout(function(){
-            console.log('Olá Grunt');
-            done();
-        }, 3000);
-    })
-    grunt.registerTask('tarefaDemorada', function(){
-        const done = this.async();
-        setTimeout(function(){
-            console.log('Olá Grunt');
-            done();
-        }, 3000);
-    })
+
 
     grunt.loadNpmTasks('grunt-contrib-less');
-    grunt.loadNpmTasks('grunt-contrib-sass');
-    grunt.loadNpmTasks('grunt-concurrent');
+    grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-replace');
 
-    grunt.registerTask('default', ['concurrent']);
+    grunt.registerTask('default', ['watch']);
+    grunt.registerTask('build', ['less:production']);
 }
